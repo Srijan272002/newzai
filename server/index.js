@@ -96,8 +96,15 @@ const io = new Server(server, {
   pingInterval: 25000,
   transports: ['websocket', 'polling'],
   maxHttpBufferSize: 1e8,
-  allowEIO3: true, // Enable compatibility mode
-  path: '/socket.io/' // Explicit path
+  allowEIO3: true,
+  path: '/socket.io/',
+  cookie: {
+    name: 'io',
+    path: '/',
+    httpOnly: true,
+    sameSite: 'none',
+    secure: process.env.NODE_ENV === 'production'
+  }
 });
 
 io.on('connection', (socket) => {
@@ -180,6 +187,20 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });
+});
+
+// Add middleware to handle WebSocket upgrades
+server.on('upgrade', (request, socket, head) => {
+  const origin = request.headers.origin;
+  
+  if (!allowedOrigins.includes(origin)) {
+    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+  
+  // Handle the WebSocket upgrade
+  io.engine.handleUpgrade(request, socket, head);
 });
 
 // Initialize RAG pipeline

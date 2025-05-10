@@ -76,22 +76,24 @@ const ChatContainer: React.FC = () => {
 
     socketRef.current.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
-      setError('Unable to connect to chat server. Please check your internet connection and try again.');
+      setError('Unable to connect to chat server. The server might be temporarily unavailable. Please try again later.');
     });
 
-    socketRef.current.on('reconnect', (attemptNumber) => {
-      console.log(`Reconnected after ${attemptNumber} attempts`);
-      setError(null);
-      // Refresh data after reconnection
-      fetchChatHistory(currentSessionId);
-      fetchSessions();
+    socketRef.current.on('connect_timeout', () => {
+      console.error('Socket connection timeout');
+      setError('Connection timed out. Please check your internet connection and try again.');
     });
 
-    socketRef.current.on('reconnect_error', (error) => {
-      console.error('Socket reconnection error:', error);
-      setError('Unable to reconnect to chat server. Please try again later.');
+    socketRef.current.on('reconnect_attempt', (attemptNumber) => {
+      console.log(`Attempting to reconnect... (Attempt ${attemptNumber})`);
+      setError(`Attempting to reconnect to server... (Attempt ${attemptNumber})`);
     });
-    
+
+    socketRef.current.on('reconnect_failed', () => {
+      console.error('Socket reconnection failed');
+      setError('Unable to reconnect to the server. Please refresh the page or try again later.');
+    });
+
     socketRef.current.on('session', (data) => {
       setSessionId(data.sessionId);
       localStorage.setItem('chatSessionId', data.sessionId);
@@ -117,18 +119,9 @@ const ChatContainer: React.FC = () => {
     
     socketRef.current.on('error', (error) => {
       console.error('Socket error:', error);
-      setError('An error occurred while connecting to the chat server.');
+      setError('An error occurred with the chat connection. Please try again later.');
       setIsLoading(false);
       setStatus({ type: 'idle' });
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        {
-          role: 'assistant',
-          content: 'Sorry, there was an error processing your message. Please try again.',
-          timestamp: new Date().toISOString(),
-          isError: true
-        }
-      ]);
     });
     
     // Fetch chat history and sessions
