@@ -74,12 +74,18 @@ const ChatContainer: React.FC = () => {
     
     // Socket event listeners
     socketRef.current.on('connect', () => {
-      console.log('Connected to server');
+      console.log('Connected to server with socket ID:', socketRef.current?.id);
+      console.log('Using session ID:', currentSessionId);
       setError(null);
     });
 
     socketRef.current.on('connect_error', (error) => {
       console.error('Socket connection error:', error);
+      console.error('Connection details:', {
+        url: SOCKET_URL,
+        options: SOCKET_OPTIONS,
+        sessionId: currentSessionId
+      });
       setError('Unable to connect to chat server. The server might be temporarily unavailable. Please try again later.');
     });
 
@@ -104,6 +110,7 @@ const ChatContainer: React.FC = () => {
     });
     
     socketRef.current.on('message', (message: Message) => {
+      console.log('Received message from server:', message);
       if (message.isComplete) {
         setStreamedMessage(null);
         setMessages((prevMessages) => [...prevMessages, message]);
@@ -114,6 +121,7 @@ const ChatContainer: React.FC = () => {
     });
     
     socketRef.current.on('message-stream', (message: Message) => {
+      console.log('Received message stream:', message);
       setStreamedMessage(message);
     });
     
@@ -166,6 +174,8 @@ const ChatContainer: React.FC = () => {
   const sendMessage = (content: string) => {
     if (!content.trim() || !socketRef.current) return;
     
+    console.log('Sending message:', content);
+    
     // Add user message to messages array
     const userMessage: Message = {
       role: 'user',
@@ -182,6 +192,7 @@ const ChatContainer: React.FC = () => {
       message: content,
       sessionId
     });
+    console.log('Message emitted to server with sessionId:', sessionId);
   };
   
   // Clear chat history

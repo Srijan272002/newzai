@@ -18,7 +18,7 @@ interface Config {
 
 const development: Config = {
   SOCKET_URL: 'http://localhost:3001',
-  API_BASE_URL: '/api',
+  API_BASE_URL: 'http://localhost:3001/api',
   SOCKET_OPTIONS: {
     path: '/socket.io/',
     transports: ['websocket', 'polling'],
@@ -29,7 +29,7 @@ const development: Config = {
     reconnectionDelayMax: 5000,
     timeout: 60000,
     secure: false,
-    autoConnect: false,
+    autoConnect: true,
     forceNew: true
   }
 };

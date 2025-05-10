@@ -91,6 +91,11 @@ redisClient.on('error', (err) => console.error('Redis Client Error', err));
 // Make Redis client available to routes
 app.set('redisClient', redisClient);
 
+// Root route handler
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'NewsChat AI API is running' });
+});
+
 // Socket.io connection
 const io = new Server(server, {
   cors: {
@@ -122,21 +127,25 @@ const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
-  console.log('New client connected');
+  console.log('New client connected with ID:', socket.id);
   
   // Generate or use provided session ID
   const sessionId = socket.handshake.query.sessionId || uuidv4();
+  console.log('Session ID:', sessionId);
   socket.join(sessionId);
   
   // Send session ID to client
   socket.emit('session', { sessionId });
+  console.log('Sent session ID to client');
   
   socket.on('message', async (data) => {
+    console.log('Received message:', data);
     try {
       const { message, sessionId } = data;
       
       // Emit "typing" indicator immediately
       socket.emit('status', { type: 'typing', message: 'Searching for information...' });
+      console.log('Emitted typing status');
       
       // Store user message in Redis (don't await)
       const storeUserMessage = redisClient.lpush(`chat:${sessionId}`, JSON.stringify({
@@ -201,20 +210,6 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });
-});
-
-// Add middleware to handle WebSocket upgrades
-server.on('upgrade', (request, socket, head) => {
-  const origin = request.headers.origin;
-  
-  if (!allowedOrigins.includes(origin)) {
-    socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-    socket.destroy();
-    return;
-  }
-  
-  // Handle the WebSocket upgrade
-  io.engine.handleUpgrade(request, socket, head);
 });
 
 // Initialize RAG pipeline
