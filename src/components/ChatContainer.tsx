@@ -7,9 +7,11 @@ import SessionSidebar from './SessionSidebar';
 import { Message } from '../types/chat';
 import { AlertCircle, Menu } from 'lucide-react';
 import LoadingIndicator from './LoadingIndicator';
+import config from '../config';
 
-const SOCKET_URL = 'http://localhost:3001';
-const API_BASE_URL = '/api';
+// Use configuration values
+const SOCKET_URL = config.SOCKET_URL;
+const API_BASE_URL = config.API_BASE_URL;
 
 interface ChatStatus {
   type: 'idle' | 'typing' | 'processing';
@@ -67,6 +69,11 @@ const ChatContainer: React.FC = () => {
       query: { sessionId: currentSessionId },
       transports: ['websocket', 'polling'],
       timeout: 60000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      withCredentials: true,
     });
     
     // Socket event listeners
@@ -75,8 +82,22 @@ const ChatContainer: React.FC = () => {
       setError(null);
     });
 
-    socketRef.current.on('connect_error', () => {
-      setError('Unable to connect to chat server. Please check if the server is running.');
+    socketRef.current.on('connect_error', (error) => {
+      console.error('Socket connection error:', error);
+      setError('Unable to connect to chat server. Please check your internet connection and try again.');
+    });
+
+    socketRef.current.on('reconnect', (attemptNumber) => {
+      console.log(`Reconnected after ${attemptNumber} attempts`);
+      setError(null);
+      // Refresh data after reconnection
+      fetchChatHistory(currentSessionId);
+      fetchSessions();
+    });
+
+    socketRef.current.on('reconnect_error', (error) => {
+      console.error('Socket reconnection error:', error);
+      setError('Unable to reconnect to chat server. Please try again later.');
     });
     
     socketRef.current.on('session', (data) => {
@@ -218,6 +239,11 @@ const ChatContainer: React.FC = () => {
           query: { sessionId: newSessionId },
           transports: ['websocket', 'polling'],
           timeout: 60000,
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          withCredentials: true,
         });
       }
       
@@ -245,6 +271,11 @@ const ChatContainer: React.FC = () => {
           query: { sessionId: newSessionId },
           transports: ['websocket', 'polling'],
           timeout: 60000,
+          reconnection: true,
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          withCredentials: true,
         });
       }
       
@@ -264,6 +295,11 @@ const ChatContainer: React.FC = () => {
     }
   };
   
+  // Toggle sidebar
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
   return (
     <div className="flex h-full">
       <SessionSidebar
@@ -271,17 +307,22 @@ const ChatContainer: React.FC = () => {
         currentSessionId={sessionId}
         onSessionSelect={switchSession}
         isOpen={isSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
+        onClose={toggleSidebar}
       />
       
       <div className="flex flex-col h-full w-full glass-container rounded-card overflow-hidden">
         <div className="flex items-center p-md border-b border-white/20">
           <button
-            onClick={() => setIsSidebarOpen(true)}
-            className="p-sm hover:bg-black/5 rounded-full transition-colors mr-md"
-            aria-label="Open session sidebar"
+            id="menu-button"
+            onClick={toggleSidebar}
+            className={`p-sm hover:bg-black/5 rounded-full transition-colors mr-md ${
+              isSidebarOpen ? 'bg-black/5' : ''
+            }`}
+            aria-label={isSidebarOpen ? "Close session sidebar" : "Open session sidebar"}
           >
-            <Menu size={20} className="text-gray-dark" />
+            <Menu size={20} className={`text-gray-dark transform transition-transform ${
+              isSidebarOpen ? 'rotate-90' : ''
+            }`} />
           </button>
           <h1 className="text-xl font-semibold text-gray-dark">NewsChat AI</h1>
         </div>

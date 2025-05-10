@@ -31,13 +31,20 @@ if (missingEnvVars.length > 0) {
   console.warn('Some features may not work correctly without these variables');
 }
 
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',  // Local development
+  'https://newzai.vercel.app', // Production frontend
+];
+
 // Initialize Express app
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'DELETE'],
+    credentials: true,
   },
   pingTimeout: 60000,
   pingInterval: 25000,
@@ -46,7 +53,11 @@ const io = new Server(server, {
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true,
+  methods: ['GET', 'POST', 'DELETE'],
+}));
 app.use(express.json());
 
 // Initialize Redis client
