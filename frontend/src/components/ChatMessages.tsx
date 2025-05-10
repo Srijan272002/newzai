@@ -56,7 +56,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({
   }
   
   return (
-    <div className="flex-1 overflow-y-auto p-lg space-y-lg">
+    <div className="flex-1 overflow-y-auto p-lg space-y-xl">
       {messages.map((message, index) => (
         <ChatMessage key={index} message={message} />
       ))}

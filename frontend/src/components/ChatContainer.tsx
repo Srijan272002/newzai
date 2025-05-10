@@ -314,32 +314,34 @@ const ChatContainer: React.FC = () => {
         onClose={toggleSidebar}
       />
       
-      <div className="flex flex-col h-full w-full glass-container rounded-card overflow-hidden">
-        <div className="flex items-center p-md border-b border-white/20">
+      <div className={`flex flex-col h-full w-full bg-white/80 backdrop-blur-sm rounded-xl shadow-lg transition-all duration-300 ${
+        isSidebarOpen ? 'opacity-50' : 'opacity-100'
+      }`}>
+        <div className="flex items-center p-md border-b bg-white/90">
           <button
             id="menu-button"
             onClick={toggleSidebar}
-            className={`p-sm hover:bg-black/5 rounded-full transition-colors mr-md ${
-              isSidebarOpen ? 'bg-black/5' : ''
+            className={`p-sm hover:bg-gray-100 rounded-full transition-colors mr-md ${
+              isSidebarOpen ? 'bg-gray-100' : ''
             }`}
             aria-label={isSidebarOpen ? "Close session sidebar" : "Open session sidebar"}
           >
-            <Menu size={20} className={`text-gray-dark transform transition-transform ${
+            <Menu size={20} className={`text-gray-600 transform transition-transform ${
               isSidebarOpen ? 'rotate-90' : ''
             }`} />
           </button>
-          <h1 className="text-xl font-semibold text-gray-dark">NewsChat AI</h1>
+          <h1 className="text-xl font-semibold text-gray-800">NewsChat AI</h1>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 backdrop-blur-sm border-l-4 border-primary-black p-lg">
+          <div className="bg-red-50 border-l-4 border-red-500 p-lg">
             <div className="flex items-center">
-              <AlertCircle className="h-6 w-6 text-primary-black mr-md" />
-              <span className="text-gray-dark">{error}</span>
+              <AlertCircle className="h-6 w-6 text-red-500 mr-md" />
+              <span className="text-gray-700">{error}</span>
             </div>
             <button
               onClick={retryConnection}
-              className="mt-md text-small text-gray-medium hover:text-gray-dark transition-colors"
+              className="mt-md text-small text-gray-500 hover:text-gray-700 transition-colors"
             >
               Retry Connection
             </button>
@@ -364,7 +366,7 @@ const ChatContainer: React.FC = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="border-t border-white/20 mt-auto backdrop-blur-sm">
+        <div className="border-t bg-white/90">
           <ChatInput
             onSendMessage={sendMessage}
             isLoading={isLoading}

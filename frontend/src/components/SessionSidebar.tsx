@@ -53,7 +53,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300 z-20 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
@@ -62,41 +62,41 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
       {/* Sidebar */}
       <div
         id="session-sidebar"
-        className={`fixed top-0 left-0 h-full w-80 bg-white/10 backdrop-blur-xl border-r border-white/20 transform transition-all duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'
+        className={`fixed top-0 left-0 h-full w-96 bg-white shadow-2xl transform transition-all duration-300 ease-in-out z-30 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center justify-between p-lg border-b border-white/20">
-          <h2 className="text-xl font-semibold text-gray-dark">Chat History</h2>
+        <div className="flex items-center justify-between p-lg bg-gray-50 border-b">
+          <h2 className="text-xl font-semibold text-gray-800">Chat History</h2>
           <button
             onClick={onClose}
-            className="p-sm hover:bg-black/5 rounded-full transition-colors"
+            className="p-sm hover:bg-gray-200 rounded-full transition-colors"
             aria-label="Close sidebar"
           >
-            <ChevronLeft size={20} className="text-gray-dark" />
+            <ChevronLeft size={20} className="text-gray-600" />
           </button>
         </div>
 
-        <div className="overflow-y-auto h-[calc(100%-4rem)]">
+        <div className="h-full overflow-y-auto bg-white">
           {sessions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-medium p-lg text-center">
+            <div className="flex flex-col items-center justify-center h-full text-gray-500 p-lg text-center">
               <MessageSquare size={32} className="mb-md opacity-50" />
               <p>No previous chats found</p>
             </div>
           ) : (
-            <div className="p-md space-y-sm">
+            <div className="p-md space-y-md">
               {sessions.map((session) => (
                 <button
                   key={session.sessionId}
                   onClick={() => onSessionSelect(session.sessionId)}
-                  className={`w-full text-left p-md rounded-xl transition-all duration-200 ${
+                  className={`w-full text-left p-lg rounded-xl transition-all duration-200 hover:shadow-md ${
                     session.sessionId === currentSessionId
-                      ? 'bg-black/10 text-gray-dark scale-[0.98]'
-                      : 'hover:bg-black/5 text-gray-medium hover:scale-[0.99]'
+                      ? 'bg-blue-50 border-blue-200 border text-gray-800'
+                      : 'hover:bg-gray-50 text-gray-600 border border-gray-100'
                   }`}
                 >
                   <div className="flex items-center gap-sm mb-xs">
-                    <MessageSquare size={16} className="opacity-70" />
+                    <MessageSquare size={16} className={session.sessionId === currentSessionId ? 'text-blue-500' : 'text-gray-400'} />
                     <span className="text-small font-medium">
                       {formatDistanceToNow(new Date(session.timestamp), { addSuffix: true })}
                     </span>
