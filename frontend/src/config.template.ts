@@ -35,8 +35,8 @@ const development: Config = {
 };
 
 const production: Config = {
-  SOCKET_URL: import.meta.env.VITE_SOCKET_URL || 'https://newz-backend.vercel.app/',
-  API_BASE_URL: `${import.meta.env.VITE_API_URL || 'https://newz-backend.vercel.app/'}/api`,
+  SOCKET_URL: import.meta.env.VITE_SOCKET_URL || 'https://your-production-url.com',
+  API_BASE_URL: `${import.meta.env.VITE_API_URL || 'https://your-production-url.com'}/api`,
   SOCKET_OPTIONS: {
     path: '/socket.io/',
     transports: ['websocket', 'polling'],

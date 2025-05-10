@@ -290,7 +290,10 @@ const ChatContainer: React.FC = () => {
     const id = setTimeout(() => controller.abort(), timeout);
 
     try {
-      const response = await fetch(url, {
+      // Ensure no double slashes in URL
+      const cleanUrl = url.replace(/([^:]\/)\/+/g, "$1");
+      
+      const response = await fetch(cleanUrl, {
         ...options,
         credentials: 'include',
         signal: controller.signal,
@@ -303,6 +306,9 @@ const ChatContainer: React.FC = () => {
       clearTimeout(id);
 
       if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error(`Endpoint not found: ${cleanUrl}. Please ensure the backend server is running and the endpoint exists.`);
+        }
         throw new Error(`Server returned ${response.status}: ${response.statusText}`);
       }
 
@@ -311,11 +317,11 @@ const ChatContainer: React.FC = () => {
       clearTimeout(id);
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          throw new Error('Request timed out');
+          throw new Error('Request timed out. Please check your connection and try again.');
         }
         throw error;
       }
-      throw new Error('An unknown error occurred');
+      throw new Error('An unknown error occurred while connecting to the server.');
     }
   };
 
