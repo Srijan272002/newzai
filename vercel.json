@@ -2,22 +2,28 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/index.js",
+      "src": "index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/socket.io/(.*)",
-      "dest": "server/index.js"
+      "dest": "index.js",
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+        "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
+        "Access-Control-Allow-Credentials": "true"
+      }
     },
     {
       "src": "/api/(.*)",
-      "dest": "server/index.js"
+      "dest": "index.js"
     },
     {
       "src": "/health",
-      "dest": "server/index.js"
+      "dest": "index.js"
     }
   ]
 } 

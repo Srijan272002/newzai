@@ -1,106 +1,142 @@
-# RAG-Powered News Chatbot
+# NewzAI - AI-Powered News Chat Application
 
-A full-stack chatbot that answers queries about news articles using Retrieval-Augmented Generation (RAG).
+NewzAI is a real-time chat application that uses AI to provide intelligent responses about news and current events. The application consists of a React frontend and Node.js backend, utilizing WebSocket connections for real-time communication.
 
-## Features
+## 🚀 Features
 
-- Real-time chat with streaming responses
-- Session management with unique identifiers
-- RAG-based query processing with Google Gemini API
-- News article ingestion from RSS feeds
-- Chat history persistence with Redis
-- Responsive UI for all devices
-- Real-time news search using NewsData.io API
-- Fallback to vector search for historical news
-- Web search capability for comprehensive coverage
-- Intelligent response generation using Google's Gemini model
+- Real-time chat interface with AI responses
+- Session management for conversation history
+- WebSocket-based communication
+- Responsive and modern UI
+- Environment-based configuration
+- Redis-backed message persistence
+- News aggregation and analysis
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Frontend**: React, TypeScript, Tailwind CSS
-- **Backend**: Node.js, Express
-- **Embeddings**: Jina Embeddings
-- **Vector Store**: Qdrant
-- **LLM**: Google Gemini
-- **Cache**: Redis
-- **Real-time Communication**: Socket.io
+### Frontend
+- React 18
+- Socket.io-client
+- TypeScript
+- Vite
+- TailwindCSS
+- Lucide React (for icons)
 
-## Getting Started
+### Backend
+- Node.js
+- Express
+- Socket.io
+- Redis
+- Google's Generative AI
+- Qdrant Vector Database
 
-### Prerequisites
+## 📋 Prerequisites
 
-- Node.js 18+
+- Node.js (v16 or higher)
 - Redis server
 - Qdrant server
-- Google Gemini API key
+- Google AI API key
+- NewsData API key
 
-### Installation
+## 🔧 Environment Setup
+
+### Frontend (.env.local)
+```env
+VITE_API_URL=https://newzai-backend.vercel.app
+VITE_SOCKET_URL=https://newzai-backend.vercel.app
+VITE_ENV=production
+```
+
+### Backend (.env)
+```env
+PORT=3001
+REDIS_URL=your_redis_url
+REDIS_TTL=86400
+QDRANT_URL=your_qdrant_url
+QDRANT_API_KEY=your_qdrant_api_key
+QDRANT_COLLECTION=your_collection_name
+GEMINI_API_KEY=your_gemini_api_key
+NEWSDATA_API_KEY=your_newsdata_api_key
+```
+
+## 🚀 Installation & Setup
 
 1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file based on the `.env.example` file
-4. Start Redis and Qdrant servers
-5. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-## Caching Strategy
-
-The application uses Redis for efficient caching with the following configurations:
-
-### TTL Configuration
-
-- Default TTL for chat sessions: 86400 seconds (24 hours)
-- This can be configured in the `.env` file using the `REDIS_TTL` variable
-
-### Cache Warming
-
-In a production environment, you could implement cache warming by:
-
-1. Pre-fetching popular news articles and generating embeddings
-2. Periodically updating the vector store with new articles
-3. Implementing a background job that refreshes embeddings for older articles
-
-### Cache Invalidation
-
-For production, consider these cache invalidation strategies:
-
-1. Use Redis EXPIRE command to automatically expire old sessions
-2. Implement a cleaning job that removes sessions older than X days
-3. When users explicitly clear their chat, remove the corresponding cache entries
-
-## Project Structure
-
-```
-project/
-├── server/
-│   ├── index.js           # Main server entry point
-│   ├── ragPipeline.js     # RAG implementation
-│   ├── services/
-│   │   └── newsDataService.js  # NewsData.io integration
-│   ├── routes/
-│   │   ├── chat.js       # Chat endpoints
-│   │   ├── session.js    # Session management
-│   │   └── news.js       # News search endpoints
-│   └── utils/            # Utility functions
+```bash
+git clone https://github.com/yourusername/newzai.git
+cd newzai
 ```
 
-## Environment Variables
+2. Install dependencies for both frontend and backend
+```bash
+# Frontend
+cd frontend
+npm install
 
-Required environment variables:
-- `PORT`: Server port number
-- `REDIS_URL`: Redis connection URL
-- `REDIS_TTL`: Redis cache TTL in seconds
-- `QDRANT_URL`: Qdrant vector database URL
-- `QDRANT_API_KEY`: Qdrant API key
-- `QDRANT_COLLECTION`: Qdrant collection name
-- `GEMINI_API_KEY`: Google Gemini API key
-- `NEWSDATA_API_KEY`: NewsData.io API key
+# Backend
+cd ../backend
+npm install
+```
 
-## License
+3. Set up environment variables
+- Copy `.env.example` to `.env` in the backend directory
+- Copy `.env.local.example` to `.env.local` in the frontend directory
+- Fill in your environment variables
 
-MIT
+4. Start the development servers
+```bash
+# Backend
+cd backend
+npm run dev
+
+# Frontend (in a new terminal)
+cd frontend
+npm run dev
+```
+
+## 🌐 Deployment
+
+The application is configured for deployment on Vercel:
+
+1. Frontend: Deploy the frontend directory to Vercel
+2. Backend: Deploy the backend directory to Vercel
+3. Set up the environment variables in Vercel's dashboard
+4. Ensure the WebSocket connections are properly configured in `vercel.json`
+
+## 📝 API Routes
+
+### WebSocket Events
+- `connection`: Initial socket connection
+- `message`: Send/receive chat messages
+- `status`: Chat status updates
+- `error`: Error events
+- `session`: Session management
+
+### REST Endpoints
+- `GET /api/session`: Get all chat sessions
+- `GET /api/chat/:sessionId`: Get chat history for a session
+- `POST /api/chat/:sessionId`: Send a chat message
+- `GET /api/news`: Get latest news articles
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👥 Authors
+
+- Your Name - Initial work
+
+## 🙏 Acknowledgments
+
+- Google Generative AI
+- NewsData API
+- Qdrant Vector Database
+- All other open-source libraries used in this project 
