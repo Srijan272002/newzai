@@ -35,30 +35,47 @@ if (missingEnvVars.length > 0) {
 const allowedOrigins = [
   'http://localhost:5173',  // Local development
   'https://newzai.vercel.app', // Production frontend
+  'http://localhost:3000',  // Alternative local
+  'http://localhost:5000'   // Alternative local
 ];
 
 // Initialize Express app
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: allowedOrigins,
-    methods: ['GET', 'POST', 'DELETE'],
-    credentials: true,
-  },
-  pingTimeout: 60000,
-  pingInterval: 25000,
-  transports: ['websocket', 'polling'],
-  maxHttpBufferSize: 1e8,
-});
 
-// Middleware
+// CORS middleware with proper error handling
 app.use(cors({
-  origin: allowedOrigins,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
   credentials: true,
-  methods: ['GET', 'POST', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // 24 hours
 }));
-app.use(express.json());
+
+// Additional headers middleware
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  res.header('Access-Control-Allow-Credentials', true);
+  res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+  next();
+});
 
 // Initialize Redis client
 const redisClient = new Redis(process.env.REDIS_URL);
@@ -68,6 +85,21 @@ redisClient.on('error', (err) => console.error('Redis Client Error', err));
 app.set('redisClient', redisClient);
 
 // Socket.io connection
+const io = new Server(server, {
+  cors: {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'DELETE'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000,
+  transports: ['websocket', 'polling'],
+  maxHttpBufferSize: 1e8,
+  allowEIO3: true, // Enable compatibility mode
+  path: '/socket.io/' // Explicit path
+});
+
 io.on('connection', (socket) => {
   console.log('New client connected');
   

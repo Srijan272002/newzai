@@ -12,6 +12,7 @@ import config from '../config';
 // Use configuration values
 const SOCKET_URL = config.SOCKET_URL;
 const API_BASE_URL = config.API_BASE_URL;
+const SOCKET_OPTIONS = config.SOCKET_OPTIONS;
 
 interface ChatStatus {
   type: 'idle' | 'typing' | 'processing';
@@ -40,15 +41,12 @@ const ChatContainer: React.FC = () => {
   // Fetch all sessions
   const fetchSessions = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/session`);
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-      }
+      const response = await fetchWithTimeout(`${API_BASE_URL}/session`);
       const data = await response.json();
       setSessions(data.sessions);
     } catch (error) {
       console.error('Error fetching sessions:', error);
-      setError('Unable to load chat sessions');
+      setError('Unable to load chat sessions. Please try again later.');
     }
   };
 
@@ -64,16 +62,10 @@ const ChatContainer: React.FC = () => {
     
     setSessionId(currentSessionId);
     
-    // Initialize socket connection
+    // Initialize socket connection with robust configuration
     socketRef.current = io(SOCKET_URL, {
+      ...SOCKET_OPTIONS,
       query: { sessionId: currentSessionId },
-      transports: ['websocket', 'polling'],
-      timeout: 60000,
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      withCredentials: true,
     });
     
     // Socket event listeners
@@ -162,17 +154,12 @@ const ChatContainer: React.FC = () => {
     setError(null);
     
     try {
-      const response = await fetch(`${API_BASE_URL}/chat/${sid}`);
-      
-      if (!response.ok) {
-        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
-      }
-      
+      const response = await fetchWithTimeout(`${API_BASE_URL}/chat/${sid}`);
       const data = await response.json();
       setMessages(data.messages || []);
     } catch (error) {
       console.error('Error fetching chat history:', error);
-      setError('Unable to load chat history. Please check if the server is running.');
+      setError('Unable to load chat history. Please try again later.');
     } finally {
       setIsHistoryLoading(false);
     }
@@ -236,14 +223,8 @@ const ChatContainer: React.FC = () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = io(SOCKET_URL, {
+          ...SOCKET_OPTIONS,
           query: { sessionId: newSessionId },
-          transports: ['websocket', 'polling'],
-          timeout: 60000,
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          withCredentials: true,
         });
       }
       
@@ -268,14 +249,8 @@ const ChatContainer: React.FC = () => {
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = io(SOCKET_URL, {
+          ...SOCKET_OPTIONS,
           query: { sessionId: newSessionId },
-          transports: ['websocket', 'polling'],
-          timeout: 60000,
-          reconnection: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          withCredentials: true,
         });
       }
       
@@ -298,6 +273,42 @@ const ChatContainer: React.FC = () => {
   // Toggle sidebar
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  // Enhanced error handling for fetch requests
+  const fetchWithTimeout = async (url: string, options: RequestInit = {}) => {
+    const timeout = 8000; // 8 seconds timeout
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        credentials: 'include',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      clearTimeout(id);
+
+      if (!response.ok) {
+        throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+      }
+
+      return response;
+    } catch (error) {
+      clearTimeout(id);
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          throw new Error('Request timed out');
+        }
+        throw error;
+      }
+      throw new Error('An unknown error occurred');
+    }
   };
 
   return (
