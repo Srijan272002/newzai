@@ -33,11 +33,13 @@ if (missingEnvVars.length > 0) {
 
 // CORS configuration
 const allowedOrigins = [
-  'http://localhost:5173',  // Local development
+  'http://localhost:5173',    // Local development
   'https://newzai.vercel.app', // Production frontend
   'https://newzai-382g.vercel.app', // Production backend
-  'http://localhost:3000',  // Alternative local
-  'http://localhost:5000'   // Alternative local
+  'https://newsai-lac-ten.vercel.app', // New production frontend
+  'https://newzai-backend.vercel.app', // New production backend
+  'http://localhost:3000',    // Alternative local
+  'http://localhost:5000'     // Alternative local
 ];
 
 // Initialize Express app

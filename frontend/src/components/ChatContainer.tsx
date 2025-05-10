@@ -41,12 +41,16 @@ const ChatContainer: React.FC = () => {
   // Fetch all sessions
   const fetchSessions = async () => {
     try {
+      setIsHistoryLoading(true);
       const response = await fetchWithTimeout(`${API_BASE_URL}/session`);
       const data = await response.json();
-      setSessions(data.sessions);
+      setSessions(data.sessions || []); // Ensure sessions is always an array
     } catch (error) {
       console.error('Error fetching sessions:', error);
-      setError('Unable to load chat sessions. Please try again later.');
+      setSessions([]); // Initialize with empty array on error
+      setError('No chat sessions available.');
+    } finally {
+      setIsHistoryLoading(false);
     }
   };
 
@@ -312,6 +316,7 @@ const ChatContainer: React.FC = () => {
         onSessionSelect={switchSession}
         isOpen={isSidebarOpen}
         onClose={toggleSidebar}
+        isLoading={isHistoryLoading}
       />
       
       <div className={`flex flex-col h-full w-full bg-white/80 backdrop-blur-sm rounded-xl shadow-lg transition-all duration-300 ${

@@ -14,6 +14,7 @@ interface SessionSidebarProps {
   onSessionSelect: (sessionId: string) => void;
   isOpen: boolean;
   onClose: () => void;
+  isLoading?: boolean;
 }
 
 const SessionSidebar: React.FC<SessionSidebarProps> = ({
@@ -22,6 +23,7 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
   onSessionSelect,
   isOpen,
   onClose,
+  isLoading = false
 }) => {
   // Close sidebar on escape key
   useEffect(() => {
@@ -77,36 +79,40 @@ const SessionSidebar: React.FC<SessionSidebarProps> = ({
           </button>
         </div>
 
-        <div className="h-full overflow-y-auto bg-white">
-          {sessions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-gray-500 p-lg text-center">
-              <MessageSquare size={32} className="mb-md opacity-50" />
-              <p>No previous chats found</p>
-            </div>
-          ) : (
-            <div className="p-md space-y-md">
-              {sessions.map((session) => (
-                <button
-                  key={session.sessionId}
-                  onClick={() => onSessionSelect(session.sessionId)}
-                  className={`w-full text-left p-lg rounded-xl transition-all duration-200 hover:shadow-md ${
-                    session.sessionId === currentSessionId
-                      ? 'bg-blue-50 border-blue-200 border text-gray-800'
-                      : 'hover:bg-gray-50 text-gray-600 border border-gray-100'
-                  }`}
-                >
-                  <div className="flex items-center gap-sm mb-xs">
-                    <MessageSquare size={16} className={session.sessionId === currentSessionId ? 'text-blue-500' : 'text-gray-400'} />
-                    <span className="text-small font-medium">
-                      {formatDistanceToNow(new Date(session.timestamp), { addSuffix: true })}
-                    </span>
-                  </div>
-                  <p className="text-small line-clamp-2 opacity-80">{session.lastMessage}</p>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 p-lg text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
+            <p className="mt-md">Loading sessions...</p>
+          </div>
+        ) : sessions.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-gray-500 p-lg text-center">
+            <MessageSquare size={32} className="mb-md opacity-50" />
+            <p className="text-lg font-medium">No Chat Sessions</p>
+            <p className="mt-sm text-sm">Start a new conversation to begin chatting</p>
+          </div>
+        ) : (
+          <div className="p-md space-y-md">
+            {sessions.map((session) => (
+              <button
+                key={session.sessionId}
+                onClick={() => onSessionSelect(session.sessionId)}
+                className={`w-full text-left p-lg rounded-xl transition-all duration-200 hover:shadow-md ${
+                  session.sessionId === currentSessionId
+                    ? 'bg-blue-50 border-blue-200 border text-gray-800'
+                    : 'hover:bg-gray-50 text-gray-600 border border-gray-100'
+                }`}
+              >
+                <div className="flex items-center gap-sm mb-xs">
+                  <MessageSquare size={16} className={session.sessionId === currentSessionId ? 'text-blue-500' : 'text-gray-400'} />
+                  <span className="text-small font-medium">
+                    {formatDistanceToNow(new Date(session.timestamp), { addSuffix: true })}
+                  </span>
+                </div>
+                <p className="text-small line-clamp-2 opacity-80">{session.lastMessage}</p>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

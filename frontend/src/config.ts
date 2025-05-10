@@ -35,8 +35,8 @@ const development: Config = {
 };
 
 const production: Config = {
-  SOCKET_URL: 'https://newzai-382g.vercel.app',
-  API_BASE_URL: 'https://newzai-382g.vercel.app',
+  SOCKET_URL: 'https://newzai-backend.vercel.app',
+  API_BASE_URL: 'https://newzai-backend.vercel.app',
   SOCKET_OPTIONS: {
     path: '/socket.io/',
     transports: ['websocket', 'polling'],
@@ -52,6 +52,6 @@ const production: Config = {
   }
 };
 
-const config: Config = process.env.NODE_ENV === 'production' ? production : development;
+const config: Config = import.meta.env.PROD ? production : development;
 
 export default config; 
