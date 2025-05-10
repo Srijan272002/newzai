@@ -35,6 +35,7 @@ if (missingEnvVars.length > 0) {
 const allowedOrigins = [
   'http://localhost:5173',  // Local development
   'https://newzai.vercel.app', // Production frontend
+  'https://newzai-382g.vercel.app', // Production backend
   'http://localhost:3000',  // Alternative local
   'http://localhost:5000'   // Alternative local
 ];
@@ -50,6 +51,7 @@ app.use(cors({
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) === -1) {
+      console.warn(`Rejected CORS request from origin: ${origin}`);
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
       return callback(new Error(msg), false);
     }
@@ -64,7 +66,10 @@ app.use(cors({
 
 // Additional headers middleware
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', req.headers.origin);
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header('Access-Control-Allow-Credentials', true);
   res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
@@ -87,7 +92,14 @@ app.set('redisClient', redisClient);
 // Socket.io connection
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: function(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`Rejected Socket.IO connection from origin: ${origin}`);
+        callback(new Error('Origin not allowed'));
+      }
+    },
     methods: ['GET', 'POST', 'DELETE'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
@@ -102,7 +114,7 @@ const io = new Server(server, {
     name: 'io',
     path: '/',
     httpOnly: true,
-    sameSite: 'none',
+    sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production'
   }
 });

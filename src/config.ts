@@ -11,6 +11,8 @@ interface Config {
     reconnectionDelayMax: number;
     timeout: number;
     secure: boolean;
+    autoConnect: boolean;
+    forceNew: boolean;
   };
 }
 
@@ -26,12 +28,14 @@ const development: Config = {
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
     timeout: 60000,
-    secure: false
+    secure: false,
+    autoConnect: false,
+    forceNew: true
   }
 };
 
 const production: Config = {
-  SOCKET_URL: 'wss://newzai-382g.vercel.app',
+  SOCKET_URL: 'https://newzai-382g.vercel.app',
   API_BASE_URL: 'https://newzai-382g.vercel.app',
   SOCKET_OPTIONS: {
     path: '/socket.io/',
@@ -42,7 +46,9 @@ const production: Config = {
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
     timeout: 60000,
-    secure: true
+    secure: true,
+    autoConnect: false,
+    forceNew: true
   }
 };
 
