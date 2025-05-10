@@ -35,8 +35,8 @@ const development: Config = {
 };
 
 const production: Config = {
-  SOCKET_URL: 'https://newzai-backend.vercel.app',
-  API_BASE_URL: 'https://newzai-backend.vercel.app',
+  SOCKET_URL: 'https://newzai.vercel.app',
+  API_BASE_URL: 'https://newzai.vercel.app',
   SOCKET_OPTIONS: {
     path: '/socket.io/',
     transports: ['websocket', 'polling'],
@@ -47,7 +47,7 @@ const production: Config = {
     reconnectionDelayMax: 5000,
     timeout: 60000,
     secure: true,
-    autoConnect: false,
+    autoConnect: true,
     forceNew: true
   }
 };
